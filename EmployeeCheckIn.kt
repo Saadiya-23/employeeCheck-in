@@ -89,12 +89,13 @@ class Employee {
             return attendanceEntries.any { it.empId == empId && it.checkInDate == checkInDate && it.checkOutTime==null}
         }
 
-        fun isValidDate(date: LocalDate): Boolean {
-            val today = LocalDate.now()
-            if (date.isAfter(today)) {
-                return false
+        fun isFutureDateTime(date: LocalDate,time:LocalTime): Boolean {
+            val todayDate = LocalDate.now()
+            val todayTime=LocalTime.now()
+            if (date.isAfter(todayDate) || time.isAfter(todayTime)) {
+                return true
             }
-            return true
+            return false
         }
 
         fun checkInEmployee(empId: Int) :Boolean{
@@ -235,7 +236,7 @@ class Employee {
                         println("Enter Time (Format HH:mm):")
                         val time = input.getTime()
 
-                        if (!attendance.isValidDate(date)) {
+                        if (attendance.isFutureDateTime(date,time)) {
                             println("CheckIn failed: You cannot checkIn for the future")
                         } else if (attendance.isCheckedIn(empId, date)) {
                             println("check In failed:You have already checked In for the day")
@@ -280,7 +281,7 @@ class Employee {
                         val date = input.getDate()
                         println("Enter the Time in the format 'HH:mm")
                         val time = input.getTime()
-                        if (!attendance.isValidDate(date)) {
+                        if (attendance.isFutureDateTime(date,time)) {
                             println("CheckOut failed: You cannot checkout for the future")
                         }
                         else if(!attendance.isCheckedIn(empId,date)){
