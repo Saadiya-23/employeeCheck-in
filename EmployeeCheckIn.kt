@@ -14,15 +14,15 @@ data class EmployeeDetails(
 )
 
 data class AttendanceEntry(
-    val emp_id:Int,
+    val empId:Int,
     val checkInTime: LocalTime,
     val checkInDate: LocalDate,
     var checkOutTime: LocalTime?=null,
     var workingHours: Duration?=null
 )
 
-var employees: MutableList<EmployeeDetails> = mutableListOf()
-var attendanceEntries : MutableList<AttendanceEntry> = mutableListOf()
+val employees: MutableList<EmployeeDetails> = mutableListOf()
+val attendanceEntries : MutableList<AttendanceEntry> = mutableListOf()
 class Input {
     fun getId(): Int {
         val id = readln().toInt()
@@ -82,11 +82,11 @@ class Employee {
 
         fun isCheckedIn(empId: Int): Boolean {
             val todayDate = LocalDate.now()
-            return attendanceEntries.any { it.emp_id == empId && it.checkInDate == todayDate && it.checkOutTime==null}
+            return attendanceEntries.any { it.empId == empId && it.checkInDate == todayDate && it.checkOutTime==null}
         }
 
         fun isCheckedIn(empId: Int, checkInDate: LocalDate): Boolean {
-            return attendanceEntries.any { it.emp_id == empId && it.checkInDate == checkInDate && it.checkOutTime==null}
+            return attendanceEntries.any { it.empId == empId && it.checkInDate == checkInDate && it.checkOutTime==null}
         }
 
         fun isValidDate(date: LocalDate): Boolean {
@@ -122,17 +122,17 @@ class Employee {
 
         fun isCheckedOut(empId: Int): Boolean {
             val todayDate = LocalDate.now()
-            return attendanceEntries.any { it.emp_id == empId && it.checkInDate == todayDate && it.checkOutTime!=null}
+            return attendanceEntries.any { it.empId == empId && it.checkInDate == todayDate && it.checkOutTime!=null}
         }
 
         fun isCheckedOut(empId:Int,checkOutDate:LocalDate):Boolean {
-            return attendanceEntries.any{it.emp_id==empId && it.checkInDate==checkOutDate && it.checkOutTime!=null}
+            return attendanceEntries.any{it.empId==empId && it.checkInDate==checkOutDate && it.checkOutTime!=null}
         }
 
         fun checkOutEmployee(empId: Int) :Boolean {
             val checkOutDate = LocalDate.now()
             val checkOutTime = LocalTime.now()
-            val cIn = attendanceEntries.find { it.emp_id == empId && it.checkInDate == checkOutDate  && it.checkOutTime == null}
+            val cIn = attendanceEntries.find { it.empId == empId && it.checkInDate == checkOutDate  && it.checkOutTime == null}
             if (cIn != null) {
                 val cInTime = cIn.checkInTime
                 val workingHour = Duration.between(cInTime, checkOutTime)
@@ -140,24 +140,23 @@ class Employee {
                 cIn.workingHours=workingHour
                 return true
 
-            } else {
-                return false
             }
+            return false
         }
 
 
 
         fun checkOutEmployee(empId: Int, checkOutDate: LocalDate, checkOutTime: LocalTime):Boolean {
-                val cIn = attendanceEntries.find { it.emp_id == empId && it.checkInDate == checkOutDate && it.checkOutTime==null}
+                val cIn = attendanceEntries.find { it.empId == empId && it.checkInDate == checkOutDate && it.checkOutTime==null}
                 if (cIn != null) {
                     val checkInTime = cIn.checkInTime
                     val workingHour = Duration.between(checkInTime, checkOutTime)
                    cIn.checkOutTime=checkOutTime
                     cIn.workingHours=workingHour
                    return true
-                } else {
-                   return false
                 }
+                return false
+
             }
 
 
@@ -167,7 +166,7 @@ class Employee {
                 return
             } else {
                 attendanceEntries.forEach {
-                    println("empId: ${it.emp_id}  checkedIn Date : ${it.checkInDate} CheckedIn Time: ${it.checkInTime} CheckedOut Time:${it.checkOutTime} Working Hours:${it.workingHours}")
+                    println("empId: ${it.empId}  checkedIn Date : ${it.checkInDate} CheckedIn Time: ${it.checkInTime} CheckedOut Time:${it.checkOutTime} Working Hours:${it.workingHours}")
                 }
             }
         }
@@ -185,7 +184,7 @@ class Employee {
 
         var flag: Boolean = true
         while (flag) {
-            println("CheckIn Option:\n1.addEmployee\n2.checkIn with EmpId\n3.checkIn with EmpId,CustomDate and time(Date format:dd/MM/yyy  Time format:HH:mm)\n4.checkOut\n5.checkOut with custom Date and time\n6.view all employees\n7.view all entries\n8.exit")
+            println("CheckIn Option:\n1.addEmployee\n2.checkIn with EmpId\n3.checkIn with EmpId,CustomDate and time(Date format:dd-MM-yyy  Time format:HH:mm)\n4.checkOut\n5.checkOut with custom Date and time\n6.view all employees\n7.view all entries\n8.exit")
             println("Enter your option:")
             val op = readln().toInt()
             when (op) {
@@ -256,18 +255,17 @@ class Employee {
                     if(!emp.isEmployeeExist(empId)){
                         println("Check Out failed:Employee with id ${empId} does not exist")
                     }
-                    else if(!attendance.isCheckedOut(empId)){
+                    else if(!attendance.isCheckedIn(empId)){
+                        println("CheckOut failed :  Cannot checkout without checking in for today")
+                    }
+                    else if(attendance.isCheckedOut(empId)){
+                        println("CheckOut Failed: You have already checked out for the day")
+                    }
+                    else {
                         val isCheckedOut = attendance.checkOutEmployee(empId)
                         if(isCheckedOut){
                             println("You have been checkedOut successfuly.")
                         }
-                        else {
-                            println("CheckOut failed: cannot checkout without checkIn")
-                        }
-
-                    }
-                    else {
-                        println("CheckOut Failed: You have already checked out for the day")
                     }
                 }
 
@@ -284,14 +282,16 @@ class Employee {
                         val time = input.getTime()
                         if (!attendance.isValidDate(date)) {
                             println("CheckOut failed: You cannot checkout for the future")
-                        } else if (attendance.isCheckedOut(empId, date)) {
+                        }
+                        else if(!attendance.isCheckedIn(empId,date)){
+                            println("CheckOut failed :  Cannot checkout without checking in ")
+                        }
+                        else if (attendance.isCheckedOut(empId, date)) {
                             println("CheckOut failed:You have already checkedOut for the day ")
                         } else {
                             val isCheckOut = attendance.checkOutEmployee(empId, date, time)
                             if (isCheckOut) {
                                 println("You have been checkedOut successfuly.")
-                            } else {
-                                println("CheckOut failed: cannot checkout without checkIn")
                             }
                         }
                     }
